@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulasi Ujian Boiler & K3 - Lengkap</title>
+    <style>
+:root {
+        --primary: #2563eb;
+        --success: #16a34a;
+        --danger: #dc2626;
+        --bg: #f1f5f9;
+        --warning: #f59e0b;
+    }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            margin: 0;
+            padding: 0;
+        }
+        /* Style Navigasi Utama */
+        .main-nav {
+            background: #fff;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .nav-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            background: #e2e8f0;
+            transition: 0.3s;
+        }
+        .nav-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 20px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            display: none;
+            /* Sembunyikan semua konten di awal */
+        }
+        .container.active {
+            display: block;
+        }
+
+        /* Style bersama untuk semua tipe soal */
+        .header-soal {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .pertanyaan {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .pilihan-container {
+            display: grid;
+            gap: 10px;
+        }
+        .pilihan-btn, .pilihan-item {
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            background: white;
+            cursor: pointer;
+            text-align: left;
+            transition: 0.2s;
+        }
+
+        /* Utility CSS */
+        .correct {
+            background: #dcfce7 !important;
+            border-color: var(--success) !important;
+            color: #166534;
+            font-weight: bold;
+        }
+        .wrong {
+            background: #fee2e2 !important;
+            border-color: var(--danger) !important;
+            color: #991b1b;
+        }
+        .footer-nav {
+            margin-top: 30px;
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .btn-action {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .skor-angka {
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--primary);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="main-nav">
+        <button class="nav-btn active" onclick="switchTab('tab-pg')">Pilihan Ganda</button>
+        <button class="nav-btn" onclick="switchTab('tab-multi')">Multi Jawaban</button>
+        <button class="nav-btn" onclick="switchTab('tab-bs')">Benar / Salah</button>
+    </nav>
+
+    <div id="tab-pg" class="container active">
+        <div id="pg-quiz-section">
+            <div class="header-soal">
+                <div style="font-weight: 800;">
+                    PILIHAN GANDA
+                </div>
+                <div id="pg-stats" style="color: var(--primary); font-weight: bold;">
+                    1 / 68
+                </div>
+            </div>
+            <div class="pertanyaan" id="pg-teks"></div>
+            <div class="pilihan-container" id="pg-opsi"></div>
+            <div class="footer-nav">
+                <button class="btn-action" style="background:#e2e8f0" onclick="pgGeser(-1)">Kembali</button>
+                <button class="btn-action" style="background:var(--primary); color:white" id="pg-next-btn" onclick="pgGeser(1)">Lanjut</button>
+                <button class="btn-action" style="background:var(--success); color:white; display:none;" id="pg-finish-btn" onclick="pgSelesai()">Selesai</button>
+            </div>
+        </div>
+        <div id="pg-hasil" style="display:none; text-align:center;">
+            <h2>Hasil Pilihan Ganda</h2>
+            <div class="skor-angka" id="pg-skor-display">
+                0
+            </div>
+            <button class="btn-action" onclick="location.reload()">Ulangi</button>
+        </div>
+    </div>
+
+    <div id="tab-multi" class="container">
+        <div id="multi-quiz-section">
+            <div class="header-soal">
+                <div style="font-weight: 800;">
+                    MULTI JAWABAN
+                </div>
+                <div id="multi-stats" style="color: var(--primary); font-weight: bold;">
+                    1 / 45
+                </div>
+            </div>
+            <div class="pertanyaan" id="multi-teks"></div>
+            <div class="pilihan-container" id="multi-opsi"></div>
+            <div class="footer-nav">
+                <button class="btn-action" style="background:#e2e8f0" onclick="multiGeser(-1)">Kembali</button>
+                <button class="btn-action" style="background:var(--warning); color:white" onclick="multiHint()">Bantuan</button>
+                <button class="btn-action" style="background:var(--primary); color:white" id="multi-next-btn" onclick="multiGeser(1)">Lanjut</button>
+                <button class="btn-action" style="background:var(--success); color:white; display:none;" id="multi-finish-btn" onclick="multiSelesai()">Selesai</button>
+            </div>
+        </div>
+        <div id="multi-hasil" style="display:none; text-align:center;">
+            <h2>Hasil Multi Jawaban</h2>
+            <div class="skor-angka" id="multi-skor-display">
+                0
+            </div>
+            <button class="btn-action" onclick="location.reload()">Ulangi</button>
+        </div>
+    </div>
+
+    <div id="tab-bs" class="container">
+        <div id="bs-quiz-section">
+            <div class="header-soal">
+                <div style="font-weight: 800;">
+                    TRUE OR FALSE
+                </div>
+                <div id="bs-stats" style="color: var(--primary); font-weight: bold;">
+                    1 / 37
+                </div>
+            </div>
+            <div id="bs-box" style="padding: 40px; text-align: center; background: #f8fafc; border-radius: 12px; margin-bottom: 20px;">
+                <div class="pertanyaan" id="bs-teks" style="font-size: 1.4rem;"></div>
+            </div>
+            <div style="display:flex; gap: 20px; margin-bottom: 20px;">
+                <button class="btn-action" style="background:var(--success); color:white; padding: 20px; font-size: 1.2rem;" onclick="bsCek(true)">BENAR</button>
+                <button class="btn-action" style="background:var(--danger); color:white; padding: 20px; font-size: 1.2rem;" onclick="bsCek(false)">SALAH</button>
+            </div>
+            <div class="footer-nav">
+                <button class="btn-action" style="background:#e2e8f0" id="bs-prev-btn" onclick="bsKembali()">Kembali</button>
+                <button class="btn-action" style="background:var(--primary); color:white" id="bs-next-btn" onclick="bsLanjut()" disabled>Lanjut</button>
+            </div>
+        </div>
+        <div id="bs-hasil" style="display:none; text-align:center;">
+            <h2>Hasil Benar/Salah</h2>
+            <div class="skor-angka" id="bs-skor-display">
+                0
+            </div>
+            <button class="btn-action" onclick="location.reload()">Ulangi</button>
+        </div>
+    </div>
+
+    <script>
+        // DATA SOAL (DISINGKAT UNTUK CONTOH, MASUKKAN SEMUA DATA KAMU DI SINI)
+        const dataPG = [{
+            q: "Jenis atomisasi oil gun boiler yaitu...",
+            a: ["Atomisasi mekanis sederhana",
+                "Atomisasi uap",
+                "Atomisasi udara",
+                "Atomisasi uap dan udara"],
+            c: 0
+        }, {
+            q: "Merupakan Kipas jenis aksial memiliki karakteristik...",
+            a: ["Tekanan udara dan flow besar",
+                "Tekanan udara dan flow kecil",
+                "Flow besar dan tekanan udara kecil",
+                "Tekanan udara dan flow sedang"],
+            c: 2
+        }, {
+            q: "Untuk memastikan efek soot blower, prosedur soot blower boiler adalah...",
+            a: ["Dilakukan dari furnace ke belakang secara berurutan",
+                "Dilakukan dari bagian ekor boiler ke depan",
+                "Ketika soot blower tidak membagi urutan",
+                "Tidak ada aturan pasti untuk soot blower"],
+            c: 0
+        }, {
+            q: "Ketika beban eksternal konstan dan pembakaran menurun, level air drum...",
+            a: ["Meningkat",
+                "Menurun",
+                "Meningkat dulu, kemudian menurun",
+                "Menurun dulu, kemudian meningkat"],
+            c: 2
+        }, {
+            q: "Dengan peningkatan kapasitas boiler, maka kehilangan panas relative...",
+            a: ["Meningkat",
+                "Berkurang",
+                "Tidak berubah",
+                "Perubahan tiba-tiba"],
+            c: 2
+        }, {
+            q: "Tekanan total kipas adalah (...) antara tekanan total outlet dan tekanan total inlet.",
+            a: ["Jumlah",
+                "Perbedaan",
+                "Total produk",
+                "Tidak ada hubungan"],
+            c: 1
+        }, {
+            q: "Separator yang digunakan boiler menggunakan...",
+            a: ["Dynamic rotary separator",
+                "Statis rotary separator",
+                "Rotary separator gabungan dinamis dan statis",
+                "Boiler tidak menggunakan separator"],
+            c: 1
+        }, {
+            q: "Ketika memperkuat soot blower pada water wall, akan (...) suhu uap superheater.",
+            a: ["Menurunkan",
+                "Meningkatkan",
+                "Tidak berubah",
+                "Meningkat tapi tidak signifikan"],
+            c: 0
+        }, {
+            q: "Perbandingan Pengukur level air local dan Level air aktual drum harus...",
+            a: ["Tinggi",
+                "Rendah",
+                "Sama",
+                "Tidak boleh sama"],
+            c: 1
+        }, {
+            q: "FT mewakili (...) dari abu.",
+            a: ["Suhu leleh",
+                "Suhu deformasi",
+                "Suhu pelunakan",
+                "Suhu Pengerasan"],
+            c: 2
+        }, {
+            q: "Dalam kasus beban eksternal yang konstan, stabilitas tekanan uap bergantung pada...",
+            a: ["Ukuran kekuatan panas furnace",
+                "Stabilisasi kondisi pembakaran dalam furnace",
+                "Kapasitas penyimpanan panas boiler",
+                "Kualitas batubara yang digunakan"],
+            c: 1
+        }, {
+            q: "Titik pengukuran proteksi aliran feed water dari boiler diambil dari...",
+            a: ["Flow feed water main pipe inlet economizer",
+                "Flow feed water inlet economizer dikurang flow cooling water",
+                "Jumlah flow feed water dua pompa uap",
+                "Langsung dari pompa air sirkulasi"],
+            c: 0
+        }, {
+            q: "Dalam proses pembakaran difusi, tingkat pembakaran terutama tergantung pada...",
+            a: ["Kondisi fisika",
+                "Kondisi kimia",
+                "Kondisi eksternal",
+                "Kondisi batubara"],
+            c: 0
+        }, {
+            q: "Faktor yang mengakibatkan korosi asam pada heating surface Boiler adalah...",
+            a: ["Karbon",
+                "Sulphur",
+                "Oksigen",
+                "Karbon dioksida"],
+            c: 1
+        }, {
+            q: "Energi total pembuangan steam safety Valve harusnya (...) Maksimum penguapan boiler terus menerus.",
+            a: ["Lebih besar dari",
+                "Lebih kecil dari",
+                "Sama dengan",
+                "Tidak ada hubungannya"],
+            c: 0
+        }, {
+            q: "Boiler Feed water, air Boiler atau kualitas uap di luar standar, Setelah banyak penyesuaian tidak bisa dikembalikan normal, seharusnya...",
+            a: ["Emergency shutdown Boiler",
+                "Permohonan shutdown Boiler",
+                "Tetap beroperasi",
+                "Mengurangi beban daya"],
+            c: 1
+        }, {
+            q: "Semakin besar volume supply udara boiler, semakin tinggi suhu gas buang, reheater menyerap panas semakin...",
+            a: ["Kecil",
+                "Besar",
+                "Tidak berubah",
+                "Cenderung tidak menyerap panas"],
+            c: 1
+        }, {
+            q: "Langkah-langkah utama untuk mencegah penembakan sistem penggilingan adalah...",
+            a: ["Memecahkan sistem akumulasi debu, menghilangkan sumber api, mengontrol suhu",
+                "Serius monitor, penyesuaian yang cermat",
+                "Mencegah pemutusan batubara saat operasi",
+                "Langsung permohonan shutdown boiler"],
+            c: 0
+        }, {
+            q: "Kegagalan penggiling paling serius pada permukaan pemanas boiler adalah...",
+            a: ["Tabung Economizer",
+                "Tabung pemanas ulang",
+                "Tabung superheater",
+                "Tabung dinding air"],
+            c: 0
+        }, {
+            q: "Air yang berlebihan dalam minyak dapat menyebabkan...",
+            a: ["Pembakaran tidak stabil",
+                "Api merah gelap, stabil",
+                "Api putih jingga dan terang",
+                "Pembakaram lebih stabil"],
+            c: 0
+        }, {
+            q: "Tujuan dilakukan soot blower secara berkala pada heat surface adalah...",
+            a: ["Mengurangi ketahanan termal",
+                "Menurunkan perbedaan suhu heat surface",
+                "Mengurangi suhu kerja",
+                "Mengetes efisiensi boiler"],
+            c: 0
+        }, {
+            q: "Saat beban superheater konveksi Meningkat mengakibatkan suhu...",
+            a: ["Menurun",
+                "Tidak berubah",
+                "Meningkat",
+                "Menurun terus menerus"],
+            c: 0
+        }, {
+            q: "Ketika kadar air dalam batubara meningkat, penyerapan panas dari superheater konveksi akan...",
+            a: ["Meningkat",
+                "Menurun",
+                "Tidak berubah",
+                "Berubah-ubah"],
+            c: 0
+        }, {
+            q: "Kebocoran udara dari sistem penghancuran tekanan langsung positif akan...",
+            a: ["Mempengaruhi output pengeringan saja",
+                "Tidak berpengaruh pada efisiensi",
+                "Menyebabkan kebocoran bubuk batubara ke lingkungan",
+                "Hanya berpengaruh pada lingkungan saja"],
+            c: 2
+        }, {
+            q: "Suhu buang boiler naik, efisiensi boiler...",
+            a: ["Meningkatkan",
+                "Konstan",
+                "Menolak (Menurun)",
+                "Berfluktuasi"],
+            c: 1
+        }, {
+            q: "Kehilangan panas akibat suhu tinggi dari terak yang dibuang disebut...",
+            a: ["Kehilangan pembakaran mekanik",
+                "Kehilangan panas radiasi",
+                "Kehilangan panas fisik dari abu",
+                "Kehilangan kimia"],
+            c: 2
+        }, {
+            q: "Urutan kalibrasi safety valve yaitu...",
+            a: ["Rendah dahulu baru tinggi",
+                "Tinggi dahulu baru rendah",
+                "Mudah dahulu baru susah",
+                "Susah dahulu baru mudah"],
+            c: 1
+        }, {
+            q: "Semakin besar tingkat sirkulasi air boiler, maka sirkulasi air semakin...",
+            a: ["Berbahaya",
+                "Dapat diandalkan",
+                "Tidak berpengaruh",
+                "Menyebabkan kelebihan tekanan"],
+            c: 1
+        }, {
+            q: "Meningkatkan efek perpindahan panas preheater udara seharusnya...",
+            a: ["Meningkatkan koefisien sisi gas dan udara",
+                "Meningkatkan sisi gas atau turunkan udara",
+                "Turunkan sisi gas atau naikkan udara",
+                "Hanya naikkan sisi udara"],
+            c: 0
+        }, {
+            q: "Tujuan passivasi setelah pengawetan permukaan logam adalah...",
+            a: ["Membentuk lapisan perlindungan oksida besi magnetik",
+                "Membuat permukaan halus",
+                "Membentuk lapisan anti-abrasi",
+                "Membuat logam bersih"],
+            c: 0
+        }, {
+            q: "Menyeimbangkan ekspansi panas pipa secara alami disebut...",
+            a: ["Kompensasi dingin",
+                "Kompensasi alami",
+                "Kompensasi kompensator",
+                "Kompensasi termal"],
+            c: 1
+        }, {
+            q: "Metode perpindahan panas pemanas awal udara (APH) adalah...",
+            a: ["Konduksi",
+                "Konveksi",
+                "Radiasi",
+                "Gabungan"],
+            c: 2
+        }, {
+            q: "Rotary preheater udara memiliki luas aliran sekitar (...) dari penampang.",
+            a: ["30％",
+                "50%",
+                "80%",
+                "60%"],
+            c: 1
+        }, {
+            q: "Metode utama perpindahan panas dari water wall yaitu...",
+            a: ["Konduktivitas termal",
+                "Konveksi",
+                "Radiasi",
+                "Konduksi"],
+            c: 2
+        }, {
+            q: "Warna api pembakaran boiler yang terbaik adalah...",
+            a: ["Merah",
+                "Kuning keemasan",
+                "Kuning",
+                "Merah agak gelap"],
+            c: 1
+        }, {
+            q: "Kecepatan pembakaran dinamis sangat bergantung pada...",
+            a: ["Kondisi fisik",
+                "Kondisi kimia",
+                "Kondisi eksternal",
+                "Fisika dan kimia"],
+            c: 1
+        }, {
+            q: "Waktu terlama pada pembakaran batubara bubuk dihabiskan pada...",
+            a: ["Tahap pembakaran",
+                "Tahap pengapian",
+                "Tahap terbakar habis",
+                "Tahap awal"],
+            c: 2
+        }, {
+            q: "Kapan air preheater rotary dapat dimatikan jika suhu inlet turun?",
+            a: ["200℃",
+                "120℃",
+                "80℃",
+                "100℃"],
+            c: 1
+        }, {
+            q: "Maksud dari peniupan jelaga (soot blower) adalah...",
+            a: ["Meningkatkan efisiensi perpindahan panas",
+                "Mengurangi efisiensi ketel",
+                "Suhu asap knalpot naik",
+                "Agar ketel bersih"],
+            c: 0
+        }, {
+            q: "Pemeriksaan Indikasi ekspansi boiler mulai dilakukan...",
+            a: ["Ketika pengisian air",
+                "Ketika Ignition",
+                "Setelah batubara masuk",
+                "Setelah beroperasi normal"],
+            c: 0
+        }, {
+            q: "Semakin tinggi titik leleh abu batu bara maka...",
+            a: ["Semakin sulit melting",
+                "Semakin mudah melting",
+                "Semakin mudah api padam",
+                "Boiler makin efisien"],
+            c: 0
+        }, {
+            q: "Suhu pengapian batubara bubuk (...) jika bubuk menjadi lebih halus.",
+            a: ["Meningkat",
+                "Menurun",
+                "Tidak berubah",
+                "Suhu melebihi standar"],
+            c: 1
+        }, {
+            q: "Jika volume udara tidak mencukupi, nyala api menjadi...",
+            a: ["Putih",
+                "Merah gelap",
+                "Jingga",
+                "Kuning keemasan"],
+            c: 1
+        }, {
+            q: "Impeler PAF adalah kelas...",
+            a: ["Tingkat 1",
+                "Tingkat 2",
+                "Tingkat 3",
+                "Bukan salah satu"],
+            c: 1
+        }, {
+            q: "Boiler harus emergency shutdown jika...",
+            a: ["Reheater meledak",
+                "Superheater meledak",
+                "Semua alat ukur level air rusak",
+                "Economizer bocor"],
+            c: 2
+        }, {
+            q: "Temperatur keluaran pulverizer/grinding berada pada kisaran...",
+            a: ["55℃-59℃",
+                "64℃-65℃",
+                "60℃-63℃",
+                "59℃-60℃"],
+            c: 2
+        }, {
+            q: "Jika bearing bau menyengat atau berasap, segera...",
+            a: ["Stop fan dan identifikasi penyebab",
+                "Identifikasi tanpa stop",
+                "Emergency shutdown boiler",
+                "Tambah oli terus"],
+            c: 0
+        }, {
+            q: "Waktu pengisian air ke boiler harus lebih dari...",
+            a: ["30 menit",
+                "1 jam",
+                "1 jam 30 menit",
+                "2 jam"],
+            c: 3
+        }, {
+            q: "Jika kadar Fe dalam air buangan ≤ 500µg/L, maka...",
+            a: ["Air dikembalikan ke kondensor",
+                "Air langsung dibuang",
+                "Air disimpan di tangki",
+                "Langsung gunakan kembali"],
+            c: 0
+        }, {
+            q: "Tambah daya 10MW butuh tambahan batubara & feed water sebesar...",
+            a: ["6t/h dan 30t/h",
+                "5t/h dan 20t/h",
+                "3t/h dan 30t/h",
+                "4t/h dan 20t/h"],
+            c: 0
+        }, {
+            q: "Tujuan utama dari keselamatan kerja adalah...",
+            a: ["Mengurangi tingkat kecelakaan",
+                "Mengurangi beban pekerja",
+                "Menambah pendapatan",
+                "Menyeimbangkan beban"],
+            c: 0
+        }, {
+            q: "Dibawah ini adalah prinsip K3, kecuali?",
+            a: ["Pekerjaan bisa dilakukan selamat",
+                "Kecelakaan pasti ada penyebabnya",
+                "Penyebab harus dicegah",
+                "Kecelakaan adalah takdir"],
+            c: 3
+        }, {
+            q: "Langkah pencegahan terhadap penyakit, kecuali...",
+            a: ["Pemeriksaan kesehatan",
+                "Pendidikan kesehatan",
+                "Penjelasan sebelum kerja",
+                "Golongan fisik"],
+            c: 3
+        }, {
+            q: "Peristiwa tidak disengaja yang merusak peralatan/pekerja disebut...",
+            a: ["Kerugian kerja",
+                "Kerusakan kerja",
+                "Fatal kerja",
+                "Kecelakaan kerja"],
+            c: 3
+        }, {
+            q: "Tujuan pemeriksaan kesehatan awal adalah...",
+            a: ["Kondisi kesehatan lebih baik",
+                "Tidak menular",
+                "Acuan dasar riwayat kesehatan",
+                "Semua jawaban benar"],
+            c: 3
+        }, {
+            q: "Pemeriksaan kesehatan tenaga kerja meliputi...",
+            a: ["Awal dan berkala",
+                "Berkala dan berjangka",
+                "Awal, berkala dan khusus",
+                "Awal, berjangka dan khusus"],
+            c: 2
+        }, {
+            q: "Penyebab langsung (immediate cause) kecelakaan adalah...",
+            a: ["Tindakan dan Kondisi tidak aman",
+                "Faktor individu",
+                "Faktor pekerjaan",
+                "Faktor pekerjaan dan individu"],
+            c: 0
+        }, {
+            q: "Metode pemadaman kebakaran meliputi...",
+            a: ["Cooling & Smoothing",
+                "Cooling & Smothering",
+                "Cooling, Smothering, Starvation, Breaking Chain",
+                "Breaking News Reaction"],
+            c: 2
+        }, {
+            q: "Alasan perusahaan harus mengelola safety, kecuali...",
+            a: ["Cegah cedera",
+                "Reputasi perusahaan",
+                "Peraturan hukum",
+                "Semua jawaban benar"],
+            c: 3
+        }, {
+            q: "Kategori bahaya meliputi...",
+            a: ["Bahaya Ergonomi",
+                "Mekanis, Kimia, Biologi",
+                "Psikososial & Kelistrikan",
+                "Semua jawaban benar"],
+            c: 3
+        }, {
+            q: "Warna merah dalam simbol keselamatan bermakna...",
+            a: ["Perintah wajib",
+                "Peringatan",
+                "Larangan / Berhenti",
+                "Aman"],
+            c: 2
+        }, {
+            q: "Kondisi sumber bahaya terkendali disebut...",
+            a: ["Keamanan",
+                "APD",
+                "Kesehatan",
+                "Kepedulian"],
+            c: 0
+        }, {
+            q: "Apa kepanjangan dari K3?",
+            a: ["Keamanan Kerja",
+                "Keselamatan Kesehatan Kerja",
+                "Kesehatan dan Keselamatan Kerja",
+                "Kesehatan Keamanan"],
+            c: 2
+        }, {
+            q: "Berikut adalah Hak Perusahaan, kecuali...",
+            a: ["Perintah Kerja",
+                "Kerja Lembur",
+                "Mutasi/Demosi",
+                "Keluh Kesah kepada karyawan"],
+            c: 3
+        }, {
+            q: "Pelanggaran tingkat SPPT adalah...",
+            a: ["Mangkir 2 hari",
+                "Unit tanpa SIM/SIMPER",
+                "Tidur jam kerja",
+                "Mangkir 5 hari"],
+            c: 1
+        }, {
+            q: "Peraturan Perusahaan memuat pedoman tentang...",
+            a: ["Hak & Kewajiban Perusahaan & Karyawan",
+                "Perselisihan",
+                "Lapangan kerja",
+                "Hak Pemerintah"],
+            c: 0
+        }, {
+            q: "Pemberitahuan mogok kerja dilakukan minimal berapa hari sebelumnya?",
+            a: ["4 hari",
+                "5 hari",
+                "6 hari",
+                "7 hari"],
+            c: 3
+        }, {
+            q: "Berikut yang termasuk Hak karyawan, kecuali...",
+            a: ["Imbal Jasa",
+                "Istirahat & Cuti",
+                "Mengundurkan Diri",
+                "Membayar upah"],
+            c: 3
+        }];
+
+        const dataMulti = [{
+            q: "Faktor utama yang mempengaruhi perubahan suhu Superheater yaitu",
+            a: ["Keadaan Combustion",
+                "Perubahan Air Flow",
+                "Beban Boiler",
+                "Perubahan Tekanan Steam"],
+            c: [0,
+                1,
+                2,
+                3]
+        },
+            {
+                q: "Tiga aksesori keselamatan untuk boiler adalah",
+                a: ["Safety valve",
+                    "Stop valve",
+                    "Sight glass",
+                    "Pressure gauge"],
+                c: [0,
+                    2,
+                    3]
+            },
+            {
+                q: "Perubahan tajam dalam tingkat air drum akan menyebabkan fluktuasi ( ) dan ( )",
+                a: ["tekanan uap",
+                    "suhu uap",
+                    "Konveksi",
+                    "Radiasi"],
+                c: [0,
+                    1]
+            },
+            {
+                q: "Peralatan pembakaran boiler termasuk",
+                a: ["ruang pembakaran",
+                    "Burner",
+                    "Check valve",
+                    "perangkat pengapian"],
+                c: [0,
+                    1,
+                    3]
+            },
+            {
+                q: "Perangkat pengaman pada peralatan pengangkatan untuk membatasi beban termasuk:",
+                a: ["rel penjepit",
+                    "limiter kelebihan beban",
+                    "torsi limiter",
+                    "buffer（penyangga）"],
+                c: [1,
+                    2,
+                    3]
+            },
+            {
+                q: "Fungsi utama dinding tungku adalah",
+                a: ["Efek adiabatik",
+                    "Meningkatkan suhu udara",
+                    "Efek penyegelan",
+                    "Bentuk bentuk atau saluran"],
+                c: [0,
+                    2,
+                    3]
+            },
+            {
+                q: "Menurut arah aliran gas buang dan uap, superheater konveksi dibagi menjadi:",
+                a: ["lancar",
+                    "Berlawanan arah",
+                    "Saling berlawanan arah",
+                    "Aliran campuran"],
+                c: [0,
+                    1,
+                    2,
+                    3]
+            },
+            {
+                q: "Penyerapan panas dari bundel tabung konveksi terkait dengan:",
+                a: ["Laju aliran gas buang",
+                    "Jenis bahan bakar",
+                    "Pengaturan tabung",
+                    "Cara gas buang disiram"],
+                c: [0,
+                    1,
+                    2,
+                    3]
+            },
+            {
+                q: "Faktor lain yang mempengaruhi laju perubahan tekanan uap adalah:",
+                a: ["Kecepatan perubahan beban",
+                    "Ketel sendiri",
+                    "Inersia termal peralatan pembakaran",
+                    "Perubahan ketinggian air boiler"],
+                c: [0,
+                    1,
+                    2,
+                    3]
+            },
+            {
+                q: "Pernyataan yang benar mengenai stasiun gas adalah?",
+                a: ["pipa inlet udara dilengkapi control & cut-off valve",
+                    "penyegelan air harus menjaga level air efektif",
+                    "ujung pipa inlet dilengkapi anti-explosion & air-escape valve",
+                    "kadar oksigen 4% baru stop tungku"],
+                c: [0,
+                    1,
+                    2]
+            },
+            {
+                q: "Dalam pengoperasian pulverizer/grinding yang perlu diperhatikan adalah",
+                a: ["Temperatur keluaran 60℃ - 63℃",
+                    "Tekanan oli normal",
+                    "Motor beroperasi baik",
+                    "Pembakaran stabil"],
+                c: [0,
+                    1,
+                    2]
+            },
+            {
+                q: "Prosedur penghentian pengoperasian pulverizer/grinding adalah",
+                a: ["Kurangi batubara bertahap",
+                    "Hentikan coalfeeder",
+                    "Jaga suhu separator",
+                    "Sesuaikan beban & suhu uap"],
+                c: [0,
+                    1,
+                    2,
+                    3]
+            },
+            {
+                q: "Jika terjadi penyumbatan batubara pada grinding:",
+                a: ["Kontrol & hentikan pemberian batubara",
+                    "Tambah angin PAF jika tidak parah",
+                    "Ganti mesin grinding",
+                    "Bersihkan corong tersumbat"],
+                c: [0,
+                    1,
+                    3]
+            },
+            {
+                q: "Hal yang harus dilakukan dalam pengoperasian boiler:",
+                a: ["Pemeriksaan sebelum menyalakan",
+                    "Cek jumlah karyawan",
+                    "Pengisian air boiler",
+                    "Pengapian & pembersihan dingin",
+                    "Pembersihan panas"],
+                c: [0,
+                    2,
+                    3,
+                    4]
+            },
+            {
+                q: "Dalam operasi pemadaman furnace mode koordinasi turbin dan boiler:",
+                a: ["Turbin turun daya dulu",
+                    "Turunkan beban ke 300 MW (5MW/mnt)",
+                    "Laju turun tekanan uap 0,4 Mpa/mnt",
+                    "Suhu uap dijaga normal"],
+                c: [1,
+                    2,
+                    3]
+            },
+            {
+                q: "Pembersihan panas selesai jika kadar ( ) ≤ 200µg/L dan kadar ( ) ≤ 100µg/L",
+                a: ["Fe",
+                    "O2",
+                    "CO2",
+                    "SiO2"],
+                c: [0,
+                    3]
+            },
+            {
+                q: "Dalam kondisi beban konstan, hal yang perlu dikontrol:",
+                a: ["Tingkat superheat",
+                    "perbandingan air & batubara",
+                    "Parameter suhu & tekanan",
+                    "Suhu uap utama & reheater"],
+                c: [0,
+                    1,
+                    2,
+                    3]
+            },
+            {
+                q: "Operasi pemadaman 180MW, kontrol beralih ke ( ) dan menjaga ( ) pada 13,98MPa",
+                a: ["Mode otomatis",
+                    "Mode manual",
+                    "Tekanan uap utama",
+                    "Tekanan reheater"],
+                c: [1,
+                    2]
+            },
+            {
+                q: "Pemadaman furnace, beban turun ke 180MW masukkan ( ) di lapisan A dan bersihkan ( )",
+                a: ["minyak mikro",
+                    "Feed Water",
+                    "ekonomizer",
+                    "Furnace"],
+                c: [0,
+                    3]
+            },
+            {
+                q: "Proses pemadaman 120MW, suhu uap stabil pada ( ) dan ( ) selama 30 menit",
+                a: ["560℃",
+                    "565℃",
+                    "545℃",
+                    "550℃",
+                    "535℃"],
+                c: [2,
+                    4]
+            },
+            {
+                q: "Jenis peniup jelaga uap boiler terbagi menjadi",
+                a: ["Jelaga panjang",
+                    "Jelaga APH",
+                    "Jelaga pendek",
+                    "Jelaga menengah"],
+                c: [0,
+                    1,
+                    2,
+                    3]
+            },
+            {
+                q: "Jika ada perubahan permintaan penambahan daya maka:",
+                a: ["Tambah batubara",
+                    "Tambah feed water",
+                    "Tambah pasokan angin",
+                    "Perintah daya ke turbin",
+                    "Buang air tangki"],
+                c: [0,
+                    1,
+                    2,
+                    3]
+            },
+            {
+                q: "Penyebab kelainan pada soot blower:",
+                a: ["Motor kelebihan beban",
+                    "Peniupan tidak sesuai waktu",
+                    "Mekanikal tersangkut",
+                    "Pipa rusak/bengkok suhu tinggi"],
+                c: [0,
+                    2,
+                    3]
+            },
+            {
+                q: "Yang termasuk dalam kontrol parameter soot blowing:",
+                a: ["Tegangan",
+                    "Frekuensi",
+                    "Tekanan uap utama",
+                    "Arus",
+                    "Konsumsi daya"],
+                c: [0,
+                    1,
+                    3,
+                    4]
+            },
+            {
+                q: "Kegunaan teknis soot blowing pada boiler:",
+                a: ["Bersihkan tubing superheater/reheater/economizer",
+                    "Bersihkan tabung water wall",
+                    "Bersihkan APH",
+                    "Bersihkan pipa uap luar tungku"],
+                c: [0,
+                    1,
+                    2]
+            },
+            {
+                q: "Bahaya penumpukan kerak dan abu:",
+                a: ["Penurunan efisiensi",
+                    "Boros batubara",
+                    "Kemampuan menurun",
+                    "Dinding pipa overheat"],
+                c: [0,
+                    2,
+                    3]
+            },
+            {
+                q: "SAF Trip jika suhu ( ) ≥95℃ dan suhu ( ) ≥135℃",
+                a: ["Suhu bantalan motor",
+                    "Suhu kipas",
+                    "Suhu aktual",
+                    "Suhu koil stator motor"],
+                c: [0,
+                    3]
+            },
+            {
+                q: "Nilai kalori batubara ditentukan oleh komposisi ( ) dan ( )",
+                a: ["Karbon",
+                    "Hydrogen",
+                    "Oksigen",
+                    "Sulfur",
+                    "Karbon dioksida"],
+                c: [0,
+                    1]
+            },
+            {
+                q: "Blowdown boiler dibagi menjadi ( ) dan ( )",
+                a: ["Periodic blowdown",
+                    "Periodic continious",
+                    "Continious blowdown",
+                    "Active blowdown"],
+                c: [0,
+                    2]
+            },
+            {
+                q: "Oil gun untuk pengapian jenis ( ) dan jenis atomisasi ( )",
+                a: ["High energy igniter",
+                    "Teknis",
+                    "Low energy igniter",
+                    "Mekanis"],
+                c: [0,
+                    3]
+            },
+            {
+                q: "Hukum I Termodinamika menjelaskan konversi antara ( ) dan ( )",
+                a: ["Energi kimia",
+                    "Energi listrik",
+                    "Energi panas",
+                    "Energi Mekanis"],
+                c: [2,
+                    3]
+            },
+            {
+                q: "APH cold end sering terjadi ( ) dan ( )",
+                a: ["Penyumbatan debu",
+                    "Korosi suhu rendah",
+                    "Korosi sulfur",
+                    "Kurang konveksi",
+                    "Bocor oli"],
+                c: [0,
+                    1]
+            },
+            {
+                q: "Peralatan pembakaran boiler yaitu",
+                a: ["Batubara",
+                    "Ruang pembakaran",
+                    "Burner",
+                    "Perangkat pengapian",
+                    "Solar"],
+                c: [1,
+                    2,
+                    3]
+            },
+            {
+                q: "APAR di lokasi hanya efektif untuk benda baru terbakar karena:",
+                a: ["Jumlah terbatas",
+                    "Mampu padamkan",
+                    "Jangka semprot lama",
+                    "Jarak semprot terbatas"],
+                c: [0,
+                    3]
+            },
+            {
+                q: "Contoh pemadaman api cara Starvation:",
+                a: ["Menutup drum",
+                    "Padamkan dengan air",
+                    "Hentikan supply bahan bakar",
+                    "Putuskan aliran ke lokasi"],
+                c: [2,
+                    3]
+            },
+            {
+                q: "Manakah yang merupakan prinsip K3:",
+                a: ["Langkah seadanya",
+                    "Pekerjaan bisa selamat",
+                    "Kecelakaan ada penyebabnya",
+                    "Penyebab harus dicegah"],
+                c: [1,
+                    2,
+                    3]
+            },
+            {
+                q: "Cidera umum pada konstruksi bangunan:",
+                a: ["Sengatan listrik",
+                    "Kebisingan",
+                    "Jatuh dari ketinggian",
+                    "Mekanisme peralatan",
+                    "Hantaman benda"],
+                c: [0,
+                    2,
+                    3,
+                    4]
+            },
+            {
+                q: "Contoh kondisi tidak aman adalah KECUALI:",
+                a: ["Peralatan rusak",
+                    "Ugal-ugalan",
+                    "Bersenda gurau",
+                    "Ceceran Oli"],
+                c: [1,
+                    2]
+            },
+            {
+                q: "Syarat-syarat helm APD:",
+                a: ["Tahan benturan",
+                    "Meredam kejutan",
+                    "Tidak mudah terbakar",
+                    "Mudah disesuaikan",
+                    "Anti air"],
+                c: [0,
+                    1,
+                    2,
+                    3]
+            },
+            {
+                q: "Yang bertanggung jawab terhadap K3 di tempat kerja:",
+                a: ["Manajemen",
+                    "Pengawas",
+                    "Petugas K3",
+                    "Investor",
+                    "Masyarakat"],
+                c: [0,
+                    1,
+                    2]
+            },
+            {
+                q: "Sanksi-sanksi yang diberlakukan di Perusahaan:",
+                a: ["Teguran",
+                    "SP I",
+                    "SP II",
+                    "SP III",
+                    "PHK"],
+                c: [1,
+                    2,
+                    3,
+                    4]
+            },
+            {
+                q: "Pelanggaran yang dapat diberikan SP I:",
+                a: ["Tidak taati jam kerja",
+                    "Terlambat 1-5 mnt (2x sebulan)",
+                    "Mangkir 1 hari",
+                    "Mangkir 3 hari"],
+                c: [1,
+                    2]
+            },
+            {
+                q: "Pelanggaran yang dapat diberikan SPPT:",
+                a: ["Mangkir 3 hari",
+                    "Mangkir 4 hari",
+                    "Mangkir 1 hari",
+                    "Mangkir 2 hari"],
+                c: [0,
+                    1]
+            },
+            {
+                q: "Pelanggaran yang dapat Pemutusan Hubungan Kerja (PHK):",
+                a: ["Pengulangan SP I",
+                    "Unit tanpa SIMPER",
+                    "Tidak cakap kerja",
+                    "Penganiayaan"],
+                c: [0,
+                    3]
+            },
+            {
+                q: "Manakah yang BUKAN pelanggaran SP I:",
+                a: ["Mangkir 4 hari",
+                    "Tidak taati jam kerja",
+                    "Menolak lembur sah",
+                    "Tidak cakap kerja"],
+                c: [0,
+                    1,
+                    2]
+            }];
+
+        const dataBS = [{
+            q: "Saat Boiler berhenti mengisi air, Seharusnya valve Recirculation Economizer di buka",
+            a: true
+        },
+            {
+                q: "Setelah main steam pipe terisolasi, dapat mencegah terjadinya proses perpindahan panas",
+                a: false
+            },
+            {
+                q: "Kandungan garam kritis di dalam air boiler berhubungan dengan beban boiler: semakin tinggi beban, semakin rendah kandungan garam kritis air boiler",
+                a: false
+            },
+            {
+                q: "Untuk boiler yang sama, saat beban rendah kehilangan panas lebih kecil",
+                a: false
+            },
+            {
+                q: "Beban boiler terlalu tinggi, terlalu rendah, dan kehilangan panas dari bahan bakar yang mudah terbakar di fly ash meningkat",
+                a: false
+            },
+            {
+                q: "Setelah SAF dinyalakan, sekat outletnya dengan beban harus dibuka, untuk mencegah operasi blower aliran rendah terus menerus, yang akan menyebabkan impeler blower menjadi terlalu panas dan rusak",
+                a: true
+            },
+            {
+                q: "Suhu berlebih mengacu pada operasi, pemanasan berlebih mengacu pada ledakan tabung, suhu berlebih adalah penyebab panas berlebih. Terlalu panas adalah hasil dari suhu berlebih",
+                a: true
+            },
+            {
+                q: "Bahan bakar batubara harus berventilasi menyeluruh sebelum penyalaan Boiler, waktu ventilasi harus lebih dari 5 menit, dan volume ventilasi harus lebih dari 30% dari nilai ditentukan.",
+                a: true
+            },
+            {
+                q: "Jika abu, terak atau kotoran pada permukaan pemanas dinding air, suhu gas buang di outlet furnace akan berkurang",
+                a: false
+            },
+            {
+                q: "Kehilangan panas terbesar dari boiler pembangkit listrik adalah kehilangan panas dari pembakaran mekanis yang tidak sempurna.",
+                a: false
+            },
+            {
+                q: "Jika pintu gas buang pada superheater dibuka 100% dan pintu gas buang pada reheter ditutup 50% maka suhu pada superheater meningkat dan pada reheater menurun",
+                a: true
+            },
+            {
+                q: "Fungsi dari PAF: adalah sumber tenaga penggerak aliran kolaborasi udara dan serbuk dalam system produksi serbuk batubara, untuk mengatasi hambatan pada saat proses pengaliran,dan juga untuk menggeringkan dan mengantarkan serbuk",
+                a: true
+            },
+            {
+                q: "Persyaratan emergency shutdown PAF adalah Suhu bearing motor meningkat tajam Bearing kipas berasap,motor kipas berasap",
+                a: true
+            },
+            {
+                q: "Power rated motor IDF yaitu 4000kW serta arus ratednya 280A",
+                a: false
+            },
+            {
+                q: "Semua suhu bantalan untuk peralatan berkipas adalah sama",
+                a: false
+            },
+            {
+                q: "Salah satu kegunaan inspeksi adalah untuk memastikan data yang ada dilapangan dan monitor sinkron serta mencegah kecacatan peralatan",
+                a: true
+            },
+            {
+                q: "Dalam pengisian air ke boiler, ketika level air ditangki penyimpanan mencapai 6 meter, aktifkan 361 ke mode otomatis, dan pastikan pengaturan level air otomatis berjalan normal",
+                a: true
+            },
+            {
+                q: "Dalam pengapian dan pembersihan boiler dalam kondisi dingin, nyalakan IDF. Nyalakan blower pemanas udara dan sesuaikan total aliran udara diatas 50% B-MCR",
+                a: false
+            },
+            {
+                q: "Pengapian dan pembersihan boiler dalam kondisi dingin katup pengatur oli dan katup pengatur oli pengembalian tidak perlu dibuka",
+                a: false
+            },
+            {
+                q: "Saat pembersihan boiler dalam kondisi panas perlu menyesuaikan aliran masuk ekonomizer boiler hingga 245t/h",
+                a: true
+            },
+            {
+                q: "Saat pembersihan boiler dalam kondisi panas ketika tekanan uap superheater mencapai 0,2Mpa, tidak perlu menutup semua katup udara boiler",
+                a: false
+            },
+            {
+                q: "Selama proses pembersihan panas, pertahankan aliran pembersihan pada 25% B-MCR",
+                a: true
+            },
+            {
+                q: "Ketika suhu angin PAF mencapai 170℃, hentikan operasi pemanas udara grinding A",
+                a: true
+            },
+            {
+                q: "Sebelum menyalakan boiler tidak perlu memeriksa level batubara di bangker batubara",
+                a: false
+            },
+            {
+                q: "Menyalakan CCTV untuk pemantauan sebelum menyalakan boiler tidak diperlukan",
+                a: false
+            },
+            {
+                q: "Simbol K3 yang berwarna kuning menandakan peringatan kewaspadaan",
+                a: true
+            },
+            {
+                q: "Upaya pencegahan lebih baik daripada upaya pengobatan terhadap kecelakaan atau akibat kerja, sebagai alternatif terakhir dari pencegahan dalam hirarki pengendalian bahaya adalah Alat Pelindung Diri.",
+                a: true
+            },
+            {
+                q: "Pekerja yang perlu waktu menyelesaikan pekerjaan 5-10 menit tidak perlu menggunakan APD.",
+                a: false
+            },
+            {
+                q: "Tindakan pembetulan dan pencegahan yang mendasar merupakan salah satu keuntungan dari Inspeksi",
+                a: true
+            },
+            {
+                q: "Safety line kuning artinya area berbahaya dimana setiap orang yang melintas harus berhati-hati",
+                a: true
+            },
+            {
+                q: "Setiap kecelakaan yang terjadi, maka akan ada rekomendasi atau tindakan perbaikan dari kecelakaan tersebut, tujuan dari rekomendasi tindakan perbaikan adalah Agar kecelakaan Tersebut Tidak Terulang Kembali",
+                a: true
+            },
+            {
+                q: "Warna biru yang digunakan dalam sign menandakan “Kewajiban”",
+                a: true
+            },
+            {
+                q: "Mangkir 2 hari dapat dikenakan sanski Surat Peringatan III",
+                a: false
+            },
+            {
+                q: "Karyawan tidak dibenarkan mengoperasikan unit/alat tanpa memiliki SIMPER",
+                a: true
+            },
+            {
+                q: "Mangkir 1 hari dapat dikenakan sanksi Surat Teguran",
+                a: false
+            },
+            {
+                q: "Masa berlaku Surat Peringatan I, Surat Peringatan II, Surat Peringatan III adalah 6 bulan",
+                a: true
+            },
+            {
+                q: "Masa berlaku Perjanjian Kerja Bersama (PKB) adalah 1 tahun",
+                a: false
+            }];
+
+        // LOGIKA TAB
+        function switchTab(tabId) {
+            document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        // LOGIKA PILIHAN GANDA (PG)
+        let pgIdx = 0;
+        let pgJawabanUser = new Array(dataPG.length).fill(null);
+        function pgTampilkan() {
+            const s = dataPG[pgIdx];
+            document.getElementById("pg-stats").innerText = `${pgIdx + 1} / ${dataPG.length}`;
+            document.getElementById("pg-teks").innerText = s.q;
+            const cont = document.getElementById("pg-opsi");
+            cont.innerHTML = "";
+            s.a.forEach((opt, i) => {
+                const b = document.createElement("button");
+                b.className = "pilihan-btn";
+                b.innerText = `${String.fromCharCode(65+i)}. ${opt}`;
+                if (pgJawabanUser[pgIdx] !== null) {
+                    b.disabled = true;
+                    if (i === s.c) b.classList.add("correct");
+                    if (i === pgJawabanUser[pgIdx] && i !== s.c) b.classList.add("wrong");
+                }
+                b.onclick = () => {
+                    pgJawabanUser[pgIdx] = i; pgTampilkan();
+                };
+                cont.appendChild(b);
+            });
+            document.getElementById("pg-next-btn").style.display = pgIdx === dataPG.length-1 ? "none": "block";
+            document.getElementById("pg-finish-btn").style.display = pgIdx === dataPG.length-1 ? "block": "none";
+        }
+        function pgGeser(n) {
+            pgIdx += n; pgTampilkan();
+        }
+        function pgSelesai() {
+            let benar = pgJawabanUser.filter((j, i) => j === dataPG[i].c).length;
+            document.getElementById("pg-quiz-section").style.display = "none";
+            document.getElementById("pg-hasil").style.display = "block";
+            document.getElementById("pg-skor-display").innerText = Math.round((benar/dataPG.length)*100);
+        }
+
+        // LOGIKA MULTI JAWABAN
+        let mIdx = 0;
+        let mJawabanUser = dataMulti.map(() => []);
+        function multiTampilkan() {
+            const s = dataMulti[mIdx];
+            document.getElementById("multi-stats").innerText = `${mIdx + 1} / ${dataMulti.length}`;
+            document.getElementById("multi-teks").innerText = s.q;
+            const cont = document.getElementById("multi-opsi");
+            cont.innerHTML = "";
+            s.a.forEach((opt, i) => {
+                const d = document.createElement("div");
+                const cek = mJawabanUser[mIdx].includes(i);
+                d.className = `pilihan-item ${cek ? 'correct': ''}`;
+                d.innerHTML = `<input type="checkbox" ${cek ? 'checked': ''}> ${opt}`;
+                d.onclick = () => {
+                    let pos = mJawabanUser[mIdx].indexOf(i);
+                    if (pos === -1) mJawabanUser[mIdx].push(i); else mJawabanUser[mIdx].splice(pos, 1);
+                    multiTampilkan();
+                };
+                cont.appendChild(d);
+            });
+            document.getElementById("multi-next-btn").style.display = mIdx === dataMulti.length-1 ? "none": "block";
+            document.getElementById("multi-finish-btn").style.display = mIdx === dataMulti.length-1 ? "block": "none";
+        }
+        function multiGeser(n) {
+            mIdx += n; multiTampilkan();
+        }
+        function multiHint() {
+            const items = document.querySelectorAll('#multi-opsi .pilihan-item');
+            dataMulti[mIdx].c.forEach(idx => items[idx].style.borderColor = "var(--success)");
+        }
+        function multiSelesai() {
+            let benar = 0;
+            dataMulti.forEach((s, i) => {
+                if (mJawabanUser[i].sort().join(',') === s.c.sort().join(',')) benar++;
+            });
+            document.getElementById("multi-quiz-section").style.display = "none";
+            document.getElementById("multi-hasil").style.display = "block";
+            document.getElementById("multi-skor-display").innerText = Math.round((benar/dataMulti.length)*100);
+        }
+
+        // LOGIKA BENAR SALAH
+        let bsIdx = 0;
+        let bsSkor = 0;
+        let bsProgres = 0;
+        function bsTampilkan() {
+            document.getElementById("bs-stats").innerText = `${bsIdx + 1} / ${dataBS.length}`;
+            document.getElementById("bs-teks").innerText = dataBS[bsIdx].q;
+            document.getElementById("bs-box").style.background = "#f8fafc";
+            document.getElementById("bs-next-btn").disabled = bsIdx >= bsProgres;
+        }
+        function bsCek(jawab) {
+            if (jawab === dataBS[bsIdx].a) {
+                document.getElementById("bs-box").style.background = "#dcfce7";
+                if (bsIdx === bsProgres) {
+                    bsSkor++; bsProgres++;
+                }
+                document.getElementById("bs-next-btn").disabled = false;
+                setTimeout(bsLanjut, 600);
+            } else {
+                document.getElementById("bs-box").style.background = "#fee2e2";
+                alert("Salah!");
+            }
+        }
+        function bsLanjut() {
+            if (bsIdx < dataBS.length-1) {
+                bsIdx++; bsTampilkan();
+            } else {
+                document.getElementById("bs-quiz-section").style.display = "none";
+                document.getElementById("bs-hasil").style.display = "block";
+                document.getElementById("bs-skor-display").innerText = Math.round((bsSkor/dataBS.length)*100);
+            }
+        }
+        function bsKembali() {
+            if (bsIdx > 0) {
+                bsIdx--; bsTampilkan();
+            }
+        }
+
+        // Inisialisasi awal
+        pgTampilkan();
+        multiTampilkan();
+        bsTampilkan();
+    </script>
+</body>
+</html>
