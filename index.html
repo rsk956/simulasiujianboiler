@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Situs Sedang Dalam Perbaikan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // KONTROL STATUS PERBAIKAN DI SINI
+        // true  = Perbaikan ON (Tampilkan halaman ini)
+        // false = Perbaikan OFF (Langsung buka halaman utama)
+        const IS_MAINTENANCE = false; 
+
+        // Nama file halaman utama Anda di GitHub Pages
+        const MAIN_PAGE_URL = 'boilerV2.html'; 
+
+        if (!IS_MAINTENANCE) {
+            window.location.replace(MAIN_PAGE_URL);
+        }
+    </script>
+    <style>
+        /* Mencegah kedipan konten sebelum redirect selesai */
+        body { display: none; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col justify-between p-6 md:p-12 font-sans text-gray-900 antialiased selection:bg-gray-200">
+
+    <div class="text-xs uppercase tracking-widest font-semibold text-gray-400">
+        Status Sistem
+    </div>
+
+    <div class="max-w-xl my-auto">
+        <h1 class="text-4xl md:text-5xl font-light tracking-tight text-gray-900 mb-6 leading-tight">
+            Kami sedang melakukan beberapa pembaruan.
+        </h1>
+        <p class="text-gray-500 text-base md:text-lg mb-8 leading-relaxed max-w-md">
+            Halaman ini sedang ditingkatkan untuk memberikan pengalaman yang lebih baik. Silakan kembali lagi dalam beberapa saat.
+        </p>
+    </div>
+
+    <div class="text-xs text-gray-400 font-light">
+        &copy; 2026 Seluruh hak cipta dilindungi.
+    </div>
+
+    <script>
+        // Tampilkan halaman hanya jika memang sedang maintenance
+        if (IS_MAINTENANCE) {
+            document.body.style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
